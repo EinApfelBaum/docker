@@ -13,9 +13,9 @@ pipeline {
           }
         }
     } 
-    // stage('Build and test') {
-    //   steps {
-    //     // sh 'docker build -t periodic-backup periodic-db-backup/'
-    //   }
-    // }
+    stage('Build and test') {
+       steps {
+         sh 'docker build -t periodic-backup periodic-db-backup/'
+       }
+    }
 }
