@@ -17,6 +17,5 @@ pipeline {
     //   steps {
     //     // sh 'docker build -t periodic-backup periodic-db-backup/'
     //   }
-    // }   
-  }
+    // }
 }
