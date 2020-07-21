@@ -39,12 +39,14 @@ pipeline {
     }
     stage('Build image') {
        steps {
-         sh script: "docker build -t ${imageName} ${tagName}/"
+         sh script: "docker build -t ${userInput}/${imageName} ${tagName}/"
        }
     }
     stage("Push to registry") {
       steps{        
         echo ("Remote: ${userInput}") 
+        //sh "docker tag ${imageName} ${userInput}/${imageName}:${BRANCH_NAME}"
+        sh "docker push ${userInput}/${imageName}"
       }
     }
     stage('CleanUp') {
@@ -56,7 +58,7 @@ pipeline {
         sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u | xargs docker rmi --force || true", label: "Delete related docker images"
         
         sh script: "docker images -q -f dangling=true", label: "Show dangling docker images"
-        sh script: "docker rmi \$(docker images -q -f dangling=true) --force", label: "Delete dangling docker images"
+        sh script: "docker rmi \$(docker images -q -f dangling=true) --force || true", label: "Delete dangling docker images"
       }
     }  
   }     
