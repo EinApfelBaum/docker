@@ -17,7 +17,8 @@ pipeline {
     stage('Prepare') {
       parallel {
         stage("Info") {
-          steps {
+          steps {            
+            sh script: "echo foo", label: "my step"
             sh "docker --version", label: "Docker Version"
             sh "git --version", label: "GitVersion"
             echo "Current dir: ${pwd()}"
