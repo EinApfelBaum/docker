@@ -16,11 +16,11 @@ pipeline {
       steps {
         script {
           def userInput = input(
-            id: 'userInput', message: 'Enter remote registry:?', 
+            id: 'userInput', message: 'Enter remote registry:', 
             parameters: [
             [$class: 'TextParameterDefinition', defaultValue: 'None', description: 'Remote address of registry.', name: 'Config']
           ])
-          echo ("Remote: "+ ${userInput})
+          echo ("Remote: ${userInput}")
         }
       }
     }
