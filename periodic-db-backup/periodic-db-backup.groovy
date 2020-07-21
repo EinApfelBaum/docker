@@ -12,7 +12,7 @@ pipeline {
           userInput = input(
             id: 'userInput', message: 'Enter remote registry:', 
             parameters: [
-            [$class: 'TextParameterDefinition', defaultValue: 'None', description: 'Remote address of registry.', name: 'Config']
+            [$class: 'TextParameterDefinition', defaultValue: 'dockerRegistry:5000', description: 'Remote address of registry.', name: 'Config']
           ])
         }
       }
@@ -43,23 +43,32 @@ pipeline {
        }
     }
     stage("Push to registry") {
-      steps{        
+      steps {
         echo ("Remote: ${userInput}") 
-        //sh "docker tag ${imageName} ${userInput}/${imageName}:${BRANCH_NAME}"
         sh "docker push ${userInput}/${imageName}"
       }
     }
     stage('CleanUp') {
-      steps {
-        sh script: "docker kill \$(docker ps -q) || true", label: "Stop all containers"
-        sh script: "docker rm \$(docker ps -a -q) || true", label: "Delete all containers"
+      parallel{
+        stage("CleanUp docker") {
+          steps {
+            sh script: "docker kill \$(docker ps -q) || true", label: "Stop all containers"
+            sh script: "docker rm \$(docker ps -a -q) || true", label: "Delete all containers"
 
-        sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u", label: "Show related docker images"
-        sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u | xargs docker rmi --force || true", label: "Delete related docker images"
-        
-        sh script: "docker images -q -f dangling=true", label: "Show dangling docker images"
-        sh script: "docker rmi \$(docker images -q -f dangling=true) --force || true", label: "Delete dangling docker images"
-      }
+            sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u", label: "Show related docker images"
+            sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u | xargs docker rmi --force || true", label: "Delete related docker images"
+            
+            sh script: "docker images -q -f dangling=true", label: "Show dangling docker images"
+            sh script: "docker rmi \$(docker images -q -f dangling=true) --force || true", label: "Delete dangling docker images"
+          }
+        }
+        stage("Registry info") {
+          steps {
+            sh script: "curl http://${userInput}/v2/_catalog", label: "Remote images"
+            sh script: "curl http://${userInput}/v2/${imageName}/tags/list", label: "Remote image tags"
+          }          
+        }
+      }      
     }  
   }     
 }
