@@ -1,7 +1,7 @@
 def userInput;
 pipeline {
   agent any
-  enviroment {
+  environment {
     imageName = "periodic-backup"
     tagName = "periodic-db-backup"
   }
