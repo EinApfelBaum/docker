@@ -1,6 +1,10 @@
 def userInput;
 pipeline {
   agent any
+  enviroment {
+    imageName = "periodic-backup"
+    tagName = "periodic-db-backup"
+  }
   stages {
     stage("Interactive Input") {
       steps {
@@ -10,7 +14,6 @@ pipeline {
             parameters: [
             [$class: 'TextParameterDefinition', defaultValue: 'None', description: 'Remote address of registry.', name: 'Config']
           ])
-          echo ("Remote: ${userInput}")
         }
       }
     }
@@ -18,7 +21,6 @@ pipeline {
       parallel {
         stage("Info") {
           steps {
-            sh script: "echo foo", label: "my step"
             sh script: "docker --version", label: "Docker Version"
             sh script: "git --version", label: "GitVersion"
 
@@ -35,10 +37,27 @@ pipeline {
         }
       }        
     }
-    stage('Build and test') {
+    stage('Build image') {
        steps {
-         sh script: "docker build -t periodic-backup periodic-db-backup/"
+         sh script: "docker build -t ${imageName} ${tagName}/"
        }
     }
+    stage("Push to registry") {
+      steps{        
+        echo ("Remote: ${userInput}") 
+      }
+    }
+    stage('CleanUp') {
+      steps {
+        sh script: "docker kill \$(docker ps -q)", label: "Stop all containers"
+        sh script: "docker rm \$(docker ps -a -q)", label: "Delete all containers"
+
+        sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u", label: "Show related docker images"
+        sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u | xargs docker rmi --force || true", label: "Delete related docker images"
+        
+        sh script: "docker images -q -f dangling=true", label: "Show dangling docker images"
+        sh script: "docker rmi \$(docker images -q -f dangling=true) --force", label: "Delete dangling docker images"
+      }
+    }  
   }     
 }
