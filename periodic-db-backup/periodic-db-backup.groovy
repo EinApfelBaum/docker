@@ -21,6 +21,7 @@ pipeline {
             sh script: "echo foo", label: "my step"
             sh script: "docker --version", label: "Docker Version"
             sh script: "git --version", label: "GitVersion"
+
             echo "Current dir: ${pwd()}"
             sh script: "ls -la"
             sh script: "env", label: "Build Enviroment"
