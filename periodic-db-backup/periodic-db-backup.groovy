@@ -49,14 +49,14 @@ pipeline {
     }
     stage('CleanUp') {
       steps {
-        sh script: "docker kill $(docker ps -q)", label: "Stop all containers"
-        sh script: "docker rm $(docker ps -a -q)", label: "Delete all containers"
+        sh script: "docker kill \$(docker ps -q) || true", label: "Stop all containers"
+        sh script: "docker rm \$(docker ps -a -q) || true", label: "Delete all containers"
 
         sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u", label: "Show related docker images"
         sh script: "docker images | grep ${imageName} | awk '{print \$3 }' | sort -u | xargs docker rmi --force || true", label: "Delete related docker images"
         
         sh script: "docker images -q -f dangling=true", label: "Show dangling docker images"
-        sh script: "docker rmi $(docker images -q -f dangling=true) --force", label: "Delete dangling docker images"
+        sh script: "docker rmi \$(docker images -q -f dangling=true) --force", label: "Delete dangling docker images"
       }
     }  
   }     
