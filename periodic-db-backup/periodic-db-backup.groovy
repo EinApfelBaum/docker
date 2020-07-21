@@ -18,17 +18,17 @@ pipeline {
       parallel {
         stage("Info") {
           steps {
-            sh script "docker --version", label: "Docker Version"
-            sh script "git --version", label: "GitVersion"
+            sh "docker --version", label: "Docker Version"
+            sh "git --version", label: "GitVersion"
             echo "Current dir: ${pwd()}"
             sh 'ls -la'
-            sh script "env", label: "Build Enviroment"
+            sh "env", label: "Build Enviroment"
           }
         }  
         stage("Docker images") {
           steps{
-            sh script: "curl http://${userInput}/v2/_catalog", label: "Remote images"
-            sh script: "docker images", label: "Local images"
+            sh "curl http://${userInput}/v2/_catalog", label: "Remote images"
+            sh "docker images", label: "Local images"
           }
         }
       }        
