@@ -18,24 +18,25 @@ pipeline {
       parallel {
         stage("Info") {
           steps {
-            sh "docker --version", label: "Docker Version"
-            sh "git --version", label: "GitVersion"
+            sh script: "echo foo", label: "my step"
+            sh script: "docker --version", label: "Docker Version"
+            sh script: "git --version", label: "GitVersion"
             echo "Current dir: ${pwd()}"
-            sh 'ls -la'
-            sh "env", label: "Build Enviroment"
+            sh script: "ls -la"
+            sh script: "env", label: "Build Enviroment"
           }
         }  
         stage("Docker images") {
           steps{
-            sh "curl http://${userInput}/v2/_catalog", label: "Remote images"
-            sh "docker images", label: "Local images"
+            sh script: "curl http://${userInput}/v2/_catalog", label: "Remote images"
+            sh script: "docker images", label: "Local images"
           }
         }
       }        
     }
     stage('Build and test') {
        steps {
-         sh 'docker build -t periodic-backup periodic-db-backup/'
+         sh script: "docker build -t periodic-backup periodic-db-backup/"
        }
     }
   }     
