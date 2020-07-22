@@ -1,0 +1,60 @@
+#!/bin/sh
+# needed environment variables
+# - KEEP_DAILY
+# - KEEP_WEEKLY
+# - KEEP_MONTHLY
+# - 
+# - MYSQL_DATABASE
+# - MYSQL_CONTAINER_NAME
+# - MYSQL_ROOT_PASSWORD
+
+PERIODIC=$1
+
+# validate periodic variable
+case $1 in
+    "15min") 
+        KEEP=$KEEP_MIN 
+    ;;
+    "daily")
+        KEEP=$KEEP_DAILY
+    ;;
+    "weekly")
+        KEEP=$KEEP_WEEKLY 
+    ;;
+    "monthly")
+        KEEP=$KEEP_MONTHLY 
+    ;;
+esac
+
+DIR=/opt/mysql/backup
+DIR_PERIODIC=$DIR/$PERIODIC
+
+NOW=$(date '+%Y-%m-%d')
+
+GZIP=$(which gzip)
+MYSQLDUMP=$(which mysqldump)
+
+### MySQL Server Login info ###
+MDB=$MYSQL_DATABASE
+MHOST=$MYSQL_CONTAINER_NAME
+MPASS=$MYSQL_ROOT_PASSWORD
+MUSER=root
+
+
+
+# clear old backups function
+function prune {
+    dir=$1
+    keep=$2
+    ls $dir | sort -rn | awk "NR > $keep" | while read f; do rm $dir/$f; done
+}
+
+# do backup
+[ ! -d "$DIR_PERIODIC" ] && mkdir --parents $DIR_PERIODIC
+
+FILE=${DIR_PERIODIC}/backup-${NOW}.sql.gz
+
+$MYSQLDUMP -h $MHOST -u $MUSER -p${MPASS} --databases $MDB | $GZIP -9 > $FILE
+
+# clear
+prune $DIR_PERIODIC $KEEP
