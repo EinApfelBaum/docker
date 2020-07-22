@@ -1,16 +1,16 @@
-def userInput;
+def registry;
 pipeline {
   agent any
   environment {
     imageName = "periodic-backup"
-    tagName = "periodic-db-backup"
+    context = "periodic-db-backup"
   }
   stages {
     stage("Interactive Input") {
       steps {
         script {
-          userInput = input(
-            id: 'userInput', message: 'Enter remote registry:',
+          registry = input(
+            id: 'registry', message: 'Enter remote registry:',
             parameters: [
             [$class: 'TextParameterDefinition', defaultValue: 'dockerRegistry:5000', description: 'Remote address of registry.', name: 'Config']
           ])
@@ -31,7 +31,7 @@ pipeline {
         }
         stage("Docker images") {
           steps{
-            sh script: "curl http://${userInput}/v2/_catalog", label: "Remote images"
+            sh script: "curl http://${registry}/v2/_catalog", label: "Remote images"
             sh script: "docker images", label: "Local images"
           }
         }
@@ -39,13 +39,17 @@ pipeline {
     }
     stage('Build image') {
        steps {
-         sh script: "docker build -t ${userInput}/${imageName} ${tagName}/"
+         sh script: "docker build -t ${imageName} ${context}/"
        }
     }
     stage("Push to registry") {
+      when {
+        buildingTag()
+      }
       steps {
-        echo ("Remote: ${userInput}")
-        sh "docker push ${userInput}/${imageName}"
+        echo ("Remote: ${registry}")
+        sh script: "docker tag ${imageName} ${registry}/${imageName}:${BRANCH_NAME}"
+        sh script: "docker push ${registry}/${imageName}:${BRANCH_NAME}"
       }
     }
     stage('CleanUp') {
@@ -64,8 +68,8 @@ pipeline {
         }
         stage("Registry info") {
           steps {
-            sh script: "curl http://${userInput}/v2/_catalog", label: "Remote images"
-            sh script: "curl http://${userInput}/v2/${imageName}/tags/list", label: "Remote image tags"
+            sh script: "curl http://${registry}/v2/_catalog", label: "Remote images"
+            sh script: "curl http://${registry}/v2/${imageName}/tags/list", label: "Remote image tags"
           }
         }
       }
