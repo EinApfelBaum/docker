@@ -7,6 +7,8 @@ services:
     ports:
       - 5000:5000
     image: registry:2
+    volumes:
+      - docker_registry:/var/lib/registry
     networks:
       jenkins:
         aliases:
@@ -14,7 +16,6 @@ services:
 
   jenkins-docker:
     container_name: jenkins-docker
-    restart: always
     privileged: yes
     environment:
       DOCKER_TLS_CERTDIR: "/certs"
@@ -30,7 +31,6 @@ services:
 
   jenkins:
     container_name: jenkins
-    restart: always
     ports:
       - 8080:8080
     environment:
@@ -40,7 +40,7 @@ services:
     volumes:
       - docker_certs:/certs/client:ro
       - home:/var/jenkins_home
-    image: jenkinsci/blueocean
+    image: jenkinsci/blueocean:latest
     networks:
       - jenkins
 
@@ -48,6 +48,7 @@ volumes:
   docker:
   docker_certs:
   home:
+  docker_registry:
 
 networks:
   jenkins:
