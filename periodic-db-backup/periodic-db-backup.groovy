@@ -43,9 +43,6 @@ pipeline {
        }
     }
     stage("Push to registry") {
-      when {
-        branch 'master'
-      }
       steps {
         echo ("Remote: ${registry}")
         sh script: "docker tag ${imageName} ${registry}/${imageName}:${BUILD_NUMBER}"
