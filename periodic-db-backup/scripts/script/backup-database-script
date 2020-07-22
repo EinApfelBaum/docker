@@ -12,9 +12,6 @@ PERIODIC=$1
 
 # validate periodic variable
 case $1 in
-    "15min") 
-        KEEP=$KEEP_MIN 
-    ;;
     "daily")
         KEEP=$KEEP_DAILY
     ;;
