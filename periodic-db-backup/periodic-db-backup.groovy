@@ -44,12 +44,12 @@ pipeline {
     }
     stage("Push to registry") {
       when {
-        buildingTag()
+        branch 'master'
       }
       steps {
         echo ("Remote: ${registry}")
-        sh script: "docker tag ${imageName} ${registry}/${imageName}:${BRANCH_NAME}"
-        sh script: "docker push ${registry}/${imageName}:${BRANCH_NAME}"
+        sh script: "docker tag ${imageName} ${registry}/${imageName}:${BUILD_NUMBER}"
+        sh script: "docker push ${registry}/${imageName}:${BUILD_NUMBER}"
       }
     }
     stage('CleanUp') {
