@@ -1,54 +1,65 @@
-version: "2.2"
+version: "3.8"
+
 services:
 
-  jenkins-docker-registry:
-    container_name: jenkins-docker-registry
+  docker-registry:
+    container_name: cicd_docker-registry
     restart: always
+    image: registry:2
     ports:
       - 5000:5000
-    image: registry:2
     volumes:
       - docker_registry:/var/lib/registry
     networks:
-      jenkins:
+      cicd:
         aliases:
          - dockerRegistry
 
-  jenkins-docker:
-    container_name: jenkins-docker
+  docker:
+    container_name: cicd_docker
+    restart: always
+    image: docker:dind
     privileged: yes
     environment:
-      DOCKER_TLS_CERTDIR: "/certs"
+      - DOCKER_TLS_CERTDIR="/certs"
     volumes:
       - docker:/var/lib/docker
       - docker_certs:/certs/client
-    image: docker:dind
     command: --insecure-registry "dockerRegistry:5000"
     networks:
-      jenkins:
+      cicd:
         aliases:
           - docker
 
   jenkins:
-    container_name: jenkins
+    container_name: cicd_jenkins
+    restart: always
+    image: jenkinsci/blueocean:latest
     ports:
       - 8080:8080
     environment:
-      DOCKER_HOST: tcp://docker:2376
-      DOCKER_CERT_PATH: "/certs/client"
-      DOCKER_TLS_VERIFY: 1
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH="/certs/client"
+      - DOCKER_TLS_VERIFY=1
     volumes:
       - docker_certs:/certs/client:ro
-      - home:/var/jenkins_home
-    image: jenkinsci/blueocean:latest
+      - jenkins_home:/var/jenkins_home
     networks:
-      - jenkins
+      cicd:
+        aliases:
+          - jenkins
+
 
 volumes:
   docker:
+    name: docker
   docker_certs:
-  home:
+    name: docker_certs
   docker_registry:
+    name: docker_registry
+  jenkins_home:
+    name: jenkins_home
 
 networks:
-  jenkins:
+  cicd:
+    name: cicd
