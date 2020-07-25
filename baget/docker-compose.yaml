@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+
+  baget-db:
+    container_name: cicd_baget-db
+    image: mariadb:10.5
+    restart: always
+    ports:
+      - 3306:3306
+    env_file:
+      - ./db.env
+    volumes:
+      - dbdata:/var/lib/sql
+    networks:
+      cicd:
+        aliases:
+          - db
+
+
+  baget-dbbackup:
+    container_name: cicd_baget-dbbackup
+    image: dockerRegistry:5000/periodic-backup:01
+    depends_on:
+      - baget-db
+    env_file:
+      - ./dbBackup.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - dbdumps:/opt/mysql/backup
+    networks:
+      cicd:
+        aliases:
+          - dbbackup
+    command: crond -f -d 8
+    restart: always
+
+
+  baget:
+    container_name: cicd_baget
+    restart: always
+    image: loicsharma/baget
+    depends_on:
+      - baget-db
+    ports:
+      - 80:80
+    env_file:
+      - ./baget.env
+    volumes:
+      - baget_data:/var/baget
+    networks:
+      cicd:
+        aliases:
+          - nugetRepo
+
+
+volumes:
+  baget_data:
+    name: baget_data
+  dbdata:
+    name: baget_dbdata
+  dbdumps:
+    name: baget_dbdumps
+
+networks:
+  cicd:
+    name: cicd
