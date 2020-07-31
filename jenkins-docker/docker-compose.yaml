@@ -21,7 +21,7 @@ services:
     image: docker:dind
     privileged: yes
     environment:
-      - DOCKER_TLS_CERTDIR="/certs"
+      - DOCKER_TLS_CERTDIR=/certs
     volumes:
       - docker:/var/lib/docker
       - docker_certs:/certs/client
@@ -39,7 +39,7 @@ services:
       - 8080:8080
     environment:
       - DOCKER_HOST=tcp://docker:2376
-      - DOCKER_CERT_PATH="/certs/client"
+      - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
     volumes:
       - docker_certs:/certs/client:ro
