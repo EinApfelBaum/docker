@@ -7,7 +7,7 @@ services:
     image: mariadb:10.5
     restart: always
     ports:
-      - 57060:3306
+      - 3306:3306
     volumes:
       - dbdata:/var/lib/mysql
     environment:
@@ -22,7 +22,7 @@ services:
 
   ioBroker-dbbackup:
     container_name: ioBroker-dbbackup
-    image: 192.168.13.40:57000/periodic-backup:21
+    image: dockerRegistry:5000/periodic-backup:21
     depends_on:
       - ioBroker-db
     environment:
