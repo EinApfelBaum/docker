@@ -2,62 +2,79 @@ version: "3.8"
 
 services:
 
-  baget-db:
-    container_name: cicd_baget-db
-    image: mariadb:10.5
-    restart: always
-    ports:
-      - 3306:3306
-    env_file:
-      - ./db.env
-    volumes:
-      - dbdata:/var/lib/sql
-    networks:
-      cicd:
-        aliases:
-          - db
 
-
-  baget-dbbackup:
-    container_name: cicd_baget-dbbackup
-    image: dockerRegistry:5000/periodic-backup:01
-    depends_on:
-      - baget-db
-    env_file:
-      - ./dbBackup.env
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - dbdumps:/opt/mysql/backup
-    networks:
-      cicd:
-        aliases:
-          - dbbackup
-    command: crond -f -d 8
-    restart: always
-
-
-  baget:
+  web:
     container_name: cicd_baget
     restart: always
     image: loicsharma/baget
     depends_on:
-      - baget-db
+      - db
     ports:
       - 80:80
-    env_file:
-      - ./baget.env
+    environment:
+      - ApiKey=ApiKeyINeedToChange
+      - Storage__Type=FileSystem
+      - Storage__Path=/var/baget/packages
+      - Database__Type=MySql
+      - Database__ConnectionString=Server=db;Port=3306;Database=baget;Uid=baget;Pwd=bagetdbPassword
+      - Search__Type=Database
     volumes:
-      - baget_data:/var/baget
+      - data:/var/baget
     networks:
       cicd:
         aliases:
           - nugetRepo
 
 
+  db:
+    image: mariadb:10.5
+    restart: always
+    container_name: cicd_baget-db
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/dbroot_password
+      - MYSQL_DATABASE=baget
+      - MYSQL_USER=baget
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_password
+      - dbroot_password
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      cicd:
+        aliases:
+          - baget_db
+
+
+  dbbackup:
+    container_name: cicd_baget-dbbackup
+    image: dockerRegistry:5000/periodic-backup:22
+    depends_on:
+      - db
+    environment:
+      - MYSQL_CONTAINER_NAME=db
+      - MYSQL_DATABASE=gitea
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/dbroot_password
+      - KEEP_DAILY=7
+      - KEEP_WEEKLY=5
+      - KEEP_MONTHLY=12
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - dbdumps:/opt/mysql/backup
+    networks:
+      cicd:
+        aliases:
+          - baget_dbbackup
+    command: crond -f -d 8
+    restart: always
+
+
 volumes:
-  baget_data:
+  data:
     name: baget_data
-  dbdata:
+  db:
     name: baget_dbdata
   dbdumps:
     name: baget_dbdumps
@@ -65,3 +82,9 @@ volumes:
 networks:
   cicd:
     name: cicd
+
+secrets:
+  db_password:
+    file: ./db_password.txt
+  dbroot_password:
+    file: ./dbroot_password.txt
