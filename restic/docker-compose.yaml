@@ -27,11 +27,20 @@ volumes:
   restic_repo:
     name: restic_repo
   portainer_data:
+    name: portainer_data
   grafana_data:
+    name: grafana_data
   ioBroker_dbdata:
+    name: ioBroker_dbdata
   jenkins_home:
+    name: jenkins_home
   trilium_trilium:
+    name: trilium_trilium
   baget_data:
+    name: baget_data
   baget_dbdata:
+    name: baget_dbdata
   gitea_data:
+    name: gitea_data
   gitea_db:
+    name: gitea_db
