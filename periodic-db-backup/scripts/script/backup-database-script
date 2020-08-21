@@ -46,7 +46,7 @@ MHOST=$MYSQL_CONTAINER_NAME
 
 # check, if seceret file exist
 if [ -f /run/secrets/dbroot_password ]; then
-   MPASS=$(cat /run/secrets/dbroot_password.txt)
+   MPASS=$(cat /run/secrets/dbroot_password)
 else
     MPASS=$MYSQL_ROOT_PASSWORD
 fi
