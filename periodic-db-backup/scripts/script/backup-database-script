@@ -7,15 +7,12 @@
 # - MYSQL_DATABASE
 # - MYSQL_CONTAINER_NAME
 # - MYSQL_ROOT_PASSWORD or
-# - MYSQL_ROOT_PASSWORD_FILE
+# - a secret dbroot_password with a dbroot_password.txt file (recommended)
 
 PERIODIC=$1
 
 # validate periodic variable
 case $1 in
-    "15min")
-        KEEP=$KEEP_DAILY
-    ;;
     "daily")
         KEEP=$KEEP_DAILY
     ;;
@@ -41,7 +38,7 @@ MHOST=$MYSQL_CONTAINER_NAME
 
 # check, if seceret file exist
 if [ -f /run/secrets/dbroot_password ]; then
-   MPASS=$(cat /run/secrets/dbroot_password)
+   MPASS=$(cat /run/secrets/dbroot_password.txt)
 else
     MPASS=$MYSQL_ROOT_PASSWORD
 fi
