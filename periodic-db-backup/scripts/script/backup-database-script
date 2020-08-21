@@ -9,7 +9,7 @@
 # - MYSQL_DATABASE
 # - MYSQL_CONTAINER_NAME
 # - MYSQL_ROOT_PASSWORD or
-# - a secret dbroot_password with a dbroot_password.txt file (recommended)
+# - a secret dbroot_password pointing to dbroot_password.txt file (recommended)
 
 PERIODIC=$1
 
@@ -47,6 +47,10 @@ MHOST=$MYSQL_CONTAINER_NAME
 # check, if seceret file exist
 if [ -f /run/secrets/dbroot_password ]; then
    MPASS=$(cat /run/secrets/dbroot_password)
+   if [ -z "$MPASS" ]; then
+        echo >&2 '[BackupScript] Empty dbroot_password file specified.'
+        exit 1
+    fi
 else
     MPASS=$MYSQL_ROOT_PASSWORD
 fi
