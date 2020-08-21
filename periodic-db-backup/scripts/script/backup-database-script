@@ -34,7 +34,15 @@ MYSQLDUMP=$(which mysqldump)
 ### MySQL Server Login info ###
 MDB=$MYSQL_DATABASE
 MHOST=$MYSQL_CONTAINER_NAME
-MPASS=$MYSQL_ROOT_PASSWORD
+
+if [ -f /run/secrets/MYSQL_ROOT_PASSWORD_FILE ]; then
+   export MPASS=$(cat /run/secrets/thepassword)
+else
+    MPASS=$MYSQL_ROOT_PASSWORD
+fi
+
+echo "Secret is: $MPASS"
+
 MUSER=root
 
 
