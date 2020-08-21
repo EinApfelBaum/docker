@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if [[ -n "${KEEP_HOURLY}" ]]; then  
+    sh /opt/bin/backup-database-script "hourly"
+fi

@@ -1,5 +1,7 @@
 #!/bin/sh
 # needed environment variables
+# - KEEP_15MIN
+# - KEEP_HOURLY
 # - KEEP_DAILY
 # - KEEP_WEEKLY
 # - KEEP_MONTHLY
@@ -13,6 +15,12 @@ PERIODIC=$1
 
 # validate periodic variable
 case $1 in
+    "15min")
+        KEEP=$KEEP_15MIN
+    ;;
+    "hourly")
+        KEEP=$KEEP_HOURLY
+    ;;
     "daily")
         KEEP=$KEEP_DAILY
     ;;

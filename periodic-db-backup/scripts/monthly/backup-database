@@ -1,3 +1,5 @@
 #!/bin/sh
 
-sh /opt/bin/backup-database-script "monthly"
+if [[ -n "${KEEP_MONTHLY}" ]]; then  
+    sh /opt/bin/backup-database-script "monthly"
+fi

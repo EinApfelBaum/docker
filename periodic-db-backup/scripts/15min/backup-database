@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if [[ -n "${KEEP_15MIN}" ]]; then  
+    sh /opt/bin/backup-database-script "15min"
+fi

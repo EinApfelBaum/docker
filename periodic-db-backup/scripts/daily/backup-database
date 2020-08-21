@@ -1,3 +1,5 @@
 #!/bin/sh
 
-sh /opt/bin/backup-database-script "daily"
+if [[ -n "${KEEP_DAILY}" ]]; then  
+    sh /opt/bin/backup-database-script "daily"
+fi

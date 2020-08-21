@@ -1,3 +1,5 @@
 #!/bin/sh
 
-sh /opt/bin/backup-database-script "weekly"
+if [[ -n "${KEEP_WEEKLY}" ]]; then  
+    sh /opt/bin/backup-database-script "weekly"
+fi
