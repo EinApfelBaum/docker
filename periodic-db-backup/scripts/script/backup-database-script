@@ -6,12 +6,16 @@
 # - 
 # - MYSQL_DATABASE
 # - MYSQL_CONTAINER_NAME
-# - MYSQL_ROOT_PASSWORD
+# - MYSQL_ROOT_PASSWORD or
+# - MYSQL_ROOT_PASSWORD_FILE
 
 PERIODIC=$1
 
 # validate periodic variable
 case $1 in
+    "15min")
+        KEEP=$KEEP_DAILY
+    ;;
     "daily")
         KEEP=$KEEP_DAILY
     ;;
@@ -35,13 +39,12 @@ MYSQLDUMP=$(which mysqldump)
 MDB=$MYSQL_DATABASE
 MHOST=$MYSQL_CONTAINER_NAME
 
+# check, if seceret file exist
 if [ -f /run/secrets/MYSQL_ROOT_PASSWORD_FILE ]; then
-   export MPASS=$(cat /run/secrets/thepassword)
+   MPASS=$(cat /run/secrets/MYSQL_ROOT_PASSWORD_FILE)
 else
     MPASS=$MYSQL_ROOT_PASSWORD
 fi
-
-echo "Secret is: $MPASS"
 
 MUSER=root
 
