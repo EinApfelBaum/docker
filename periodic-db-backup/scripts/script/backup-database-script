@@ -40,8 +40,8 @@ MDB=$MYSQL_DATABASE
 MHOST=$MYSQL_CONTAINER_NAME
 
 # check, if seceret file exist
-if [ -f /run/secrets/MYSQL_ROOT_PASSWORD_FILE ]; then
-   MPASS=$(cat /run/secrets/MYSQL_ROOT_PASSWORD_FILE)
+if [ -f /run/secrets/dbroot_password ]; then
+   MPASS=$(cat /run/secrets/dbroot_password)
 else
     MPASS=$MYSQL_ROOT_PASSWORD
 fi
