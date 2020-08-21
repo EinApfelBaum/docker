@@ -50,7 +50,7 @@ services:
 
   dbbackup:
     container_name: cicd_baget-dbbackup
-    image: dockerRegistry:5000/periodic-backup:22
+    image: dockerRegistry:5000/periodic-backup:28
     depends_on:
       - db
     environment:

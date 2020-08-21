@@ -40,7 +40,7 @@ services:
           - gitea_db
 
   dbbackup:
-    image: dockerRepository:5000/periodic-backup:21
+    image: dockerRepository:5000/periodic-backup:28
     container_name: cicd_gitea-dbbackup
     restart: always
     depends_on:
