@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+  web:
+    image: gitea/gitea:1.16.5
+    container_name: gitea
+    restart: always
+    volumes:
+      - data:/data
+    ports:
+      - ${APP_PORT}:3000
+      - ${APP_SSH_PORT}:22
+    environment:
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=gitea-db:3306
+      - GITEA__database__NAME=${MYSQL_DATABASE}
+      - GITEA__database__USER=${MYSQL_USER}
+      - GITEA__database__PASSWD=${MYSQL_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - gitea
+
+  db:
+    image: mariadb:10.5
+    container_name: gitea-db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    volumes:
+      - db:/var/lib/mysql
+    ports:
+      - ${DB_PORT}:3306
+    networks:
+      - gitea
+
+  dbbackup:
+    image: ${DOCKER_REGISTRY}/periodic-backup:28
+    container_name: gitea-dbbackup
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - MYSQL_CONTAINER_NAME=gitea-db
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - KEEP_DAILY=7
+      - KEEP_WEEKLY=5
+      - KEEP_MONTHLY=12
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - dbDumps:/opt/mysql/backup
+    command: crond -f -d 8
+    networks:
+      - gitea
+
+volumes:
+  data:
+    name: gitea_data
+  db:
+    name: gitea_db
+  dbDumps:
+    name: gitea_dbDumps
+
+networks:
+  gitea:
+    name: gitea
+    external: false
