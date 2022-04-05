@@ -70,7 +70,7 @@ services:
         aliases:
           - nuget-repo
 
-  baget_db:
+  baget-db:
     image: mariadb:10.5
     restart: always
     container_name: baget-db
