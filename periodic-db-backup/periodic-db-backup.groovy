@@ -12,7 +12,7 @@ pipeline {
           registry = input(
             id: 'registry', message: 'Enter remote registry:',
             parameters: [
-            [$class: 'TextParameterDefinition', defaultValue: 'dockerRegistry:5000', description: 'Remote address of registry.', name: 'Config']
+            [$class: 'TextParameterDefinition', defaultValue: 'docker-registry:5000', description: 'Remote address of registry.', name: 'Config']
           ])
         }
       }
