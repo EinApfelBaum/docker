@@ -7,26 +7,25 @@ services:
     restart: always
     image: registry:2
     ports:
-      - 5000:5000
+      - ${DOCKER_REGISTRY_PORT}:5000
     volumes:
       - docker_registry:/var/lib/registry
     networks:
       cicd:
         aliases:
-         - dockerRegistry
+         - docker-registry
 
   docker:
     container_name: docker
     restart: always
     image: docker:dind
     privileged: yes
-    # Uncomment env file when you run "docker compose up" manually
-    # env_file:
-    #   - cicd.env
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
     volumes:
       - docker:/var/lib/docker
       - docker_certs:/certs/client
-    command: --insecure-registry "dockerRegistry:5000"
+    command: --insecure-registry "docker-registry:5000"
     networks:
       cicd:
         aliases:
@@ -36,11 +35,12 @@ services:
     container_name: jenkins
     restart: always
     image: jenkinsci/blueocean:latest
-    # Uncomment env file when you run "docker compose up" manually
-    # env_file:
-    #   - cicd.env
     ports:
-      - ${JENKINS_PORT}:8080
+      - ${BUILD_SERVER_PORT}:8080
+    environment:      
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
     volumes:
       - docker_certs:/certs/client:ro
       - jenkins_home:/var/jenkins_home
@@ -55,33 +55,36 @@ services:
     image: loicsharma/baget
     depends_on:
       - baget-db
-    # Uncomment env file when you run "docker compose up" manually
-    # env_file:
-    #   - cicd.env
     ports:
-      - ${BAGET_PORT}:80
+      - ${NUGET_PORT}:80
+    environment:      
+      - Storage__Type=FileSystem
+      - Storage__Path=/var/baget/packages
+      - Database__Type=MySql
+      - Database__ConnectionString=Server=baget-db;Port=3306;Database=${MYSQL_DATABASE};Uid=baget;Pwd=${MYSQL_PASSWORD}
+      - Search__Type=Database
     volumes:
       - baget_data:/var/baget
     networks:
       cicd:
         aliases:
-          - nugetRepo
+          - nuget-repo
 
   baget_db:
     image: mariadb:10.5
     restart: always
     container_name: baget-db
-    # Uncomment env file when you run "docker compose up" manually
-    # env_file:
-    #   - cicd.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
     ports:
       - ${NUGET_DB_PORT}:3306
     volumes:
       - baget_db:/var/lib/mysql
     networks:
-      cicd:
-        aliases:
-          - baget_db
+      - cicd
 
 
   baget_dbbackup:
@@ -89,16 +92,18 @@ services:
     image: ${DOCKER_REGISTRY}/periodic-backup:28
     depends_on:
       - baget-db
-    # Uncomment env file when you run "docker compose up" manually
-    # env_file:
-    #   - cicd.env
+    environment:
+      - MYSQL_CONTAINER_NAME=baget-db
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - KEEP_DAILY=7
+      - KEEP_WEEKLY=5
+      - KEEP_MONTHLY=12
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - baget_dbdumps:/opt/mysql/backup
     networks:
-      cicd:
-        aliases:
-          - baget_dbbackup
+      - cicd
     command: crond -f -d 8
     restart: always
 
