@@ -37,33 +37,11 @@ services:
     networks:
       - gitea
 
-  dbbackup:
-    image: ${DOCKER_REGISTRY}/periodic-backup:28
-    container_name: gitea-dbbackup
-    restart: always
-    depends_on:
-      - db
-    environment:
-      - MYSQL_CONTAINER_NAME=gitea-db
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - KEEP_DAILY=7
-      - KEEP_WEEKLY=5
-      - KEEP_MONTHLY=12
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - dbDumps:/opt/mysql/backup
-    command: crond -f -d 8
-    networks:
-      - gitea
-
 volumes:
   data:
     name: gitea_data
   db:
     name: gitea_db
-  dbDumps:
-    name: gitea_dbDumps
 
 networks:
   gitea:

@@ -87,27 +87,6 @@ services:
       - cicd
 
 
-  baget_dbbackup:
-    container_name: baget-dbbackup
-    image: ${DOCKER_REGISTRY}/periodic-backup:28
-    depends_on:
-      - baget-db
-    environment:
-      - MYSQL_CONTAINER_NAME=baget-db
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - KEEP_DAILY=7
-      - KEEP_WEEKLY=5
-      - KEEP_MONTHLY=12
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - baget_dbdumps:/opt/mysql/backup
-    networks:
-      - cicd
-    command: crond -f -d 8
-    restart: always
-
-
 volumes:
   docker:
     name: docker
@@ -121,8 +100,6 @@ volumes:
     name: baget_data
   baget_db:
     name: baget_dbdata
-  baget_dbdumps:
-    name: baget_dbdumps
 
 networks:
   cicd:
